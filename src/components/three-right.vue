@@ -1,48 +1,124 @@
 <template>
   <div class="three-right">
-    <div>
+    <div class="option">
+      <div class="option-title">信息</div>
       <!-- <button @click="onPunctuate">{{ punctuate ? '关闭' : '开启' }}</button> -->
       <slot></slot>
-      <el-select v-model="file" class="m-2" placeholder="Select" size="large">
-        <el-option v-for="item in files" :key="item.value" :label="item.text" :value="item.value" />
-      </el-select>
-      <button @click="clear">清除</button>
+
+      <div class="option-room">
+        <div class="option-room-title">
+          <span>房间</span>
+          <el-button @click.stop="dialogVisible = true" type="primary"> 添加</el-button>
+        </div>
+        <div class="option-room-body">
+          <template v-for="item in rooms">
+            <div class="option-room-item" :class="[room.id == item.id ? 'option-room-activeTtem' : '']" @click.stop="onRoom(item)">
+              {{ item.name }} -- {{ item.id }}
+              <span class="room-revise" @click.stop="cutRoom(item)">修改</span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="option-point">
+        <div class="option-point-title">
+          <span>点位</span>
+          <el-button type="primary" v-if="pointState" @click="addPoint"> 新增</el-button>
+          <el-button v-else @click="revertPoint"> 返回</el-button>
+        </div>
+        <div class="option-point-body">
+          <!-- <div class="option-point-item" v-show="pointState">
+            111111111111
+            <span class="room-revise" @click="">修改</span>
+          </div> -->
+          <div v-show="pointState">
+            <template v-for="item in room.interactivePoints" >
+              <div class="option-point-item">
+                {{ item.name }}
+                <span class="room-revise" @click="revisePoint(item)">修改</span>
+              </div>
+            </template>
+          </div>
+          <RoomPoint v-if="!pointState" @setPoint="setPoint" @close="revertPoint" :data="roomPoint"/>
+        </div>
+      </div>
+      <!-- <button @click="clear">清除</button> -->
     </div>
+    <el-dialog v-model="dialogVisible" title="添加房间" width="30%" :before-close="handleClose" destroy-on-close>
+      <Room ref="roomEl" :data="roomData" />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="handleClose">取消</el-button>
+          <el-button type="primary" @click="addThreeRoom"> 确定 </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 // import { nextTick } from 'process';
-import { computed, onMounted, ref, nextTick } from 'vue';
+import { computed, onMounted, ref, nextTick, watch } from 'vue';
 import { threeCase } from './three-control';
-// const props = defineProps(['threeCase']);
+import { pointMould } from './three-config';
+import { mainStore } from '../store/index';
+import Room from './module/room.vue';
+import RoomPoint from './module/room-point.vue';
+
+const counterStore = mainStore();
 
 const emits = defineEmits(['setLoading']);
 
-function getImageUrl(name) {
-  return new URL(`../assets/地拍/${name}.jpg`, import.meta.url).href;
-}
+const overallView = ref();
 
-const filesName = ['1 前坪', '2 一层门口', '4 左过道2', '5 二层扶梯口'];
-const files = ref([]);
-const file = ref();
+const rooms = ref([]);
+const room = ref({
+  id: '',
+  name: '',
+  toMap: null,
+  mainBody: false,
+  interactivePoints: [],
+});
 
 onMounted(() => {
   // console.log(props);
-  filesName.forEach((item) => {
-    let file = getImageUrl(`${item}`);
-    // files.push(file)
-    files.value.push({
-      text: item,
-      value: file,
-    });
-    // files[item] = file;
-  });
-  console.log(files);
+  // console.log(files);
 });
-const clear = () => {
+
+
+
+watch(counterStore.iconPoint, () => {});
+const dialogVisible = ref(false);
+const handleClose = () => {
+  dialogVisible.value = false;
+  roomData.value = null;
+};
+
+// 房间
+const roomEl = ref();
+const addThreeRoom = () => {
+  let data = {};
+  Object.assign(data, pointMould.room, roomEl.value.form);
+  if (data.id) {
+    let index = rooms.value.findIndex((res) => (res.id = data.id));
+    rooms.value[index] = data;
+  } else {
+    data.id = Math.random().toString().slice(-10);
+    rooms.value.push(data);
+  }
+  roomData.value = null;
+  dialogVisible.value = false;
+};
+
+const onRoom = (item) => {
+  if (item.id == room.value.id) return;
+  room.value = item;
+  // threeCase.foundSpherome(item.toMap);
+  onClear()
+};
+
+const onClear = () => {
   emits('setLoading', true);
-  let img = file.value;
+  let img = room.value.toMap;
   console.log(img);
   console.log(threeCase.scene.children);
   threeCase.scene.remove(threeCase.room);
@@ -50,12 +126,46 @@ const clear = () => {
   setTimeout(() => {
     threeCase.foundSpherome(img);
     emits('setLoading', false);
-  }, 2000);
+  }, 1000);
 };
+// 修改
+const roomData = ref();
+const cutRoom = (item) => {
+  console.log(item);
+  roomData.value = item;
+  dialogVisible.value = true;
+};
+
+
+
+const roomPoints = ref([]);
+const roomPoint = ref();
+
+const pointState = ref(true);
+const addPoint = () => {
+  pointState.value = false;
+};
+
+const revertPoint = () => {
+  pointState.value = true;
+  roomPoint.value = null;
+};
+
+const setPoint = (data) => {
+  console.log(data);
+  let index = room.value.interactivePoints.findIndex(res => res.id == data.id);
+  if (index == -1) {
+    room.value.interactivePoints.push(data);
+  }else{
+    room.value.interactivePoints[index] = data;
+  }
+
+  pointState.value = true;
+};
+const revisePoint = (data) =>{
+  roomPoint.value = data;
+  pointState.value = false;
+};
+
+
 </script>
-<style>
-.three-right {
-  width: 20vw;
-  height: 100vh;
-}
-</style>

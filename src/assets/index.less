@@ -1,0 +1,177 @@
+.three-main {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.three-coordinate{
+  position: fixed;
+  top: 50px;
+  left: 400px;
+  
+}
+
+.three-map {
+  width: calc(100% - 400px);
+  height: 100%;
+ 
+  // position: absolute;
+  // z-index: 100;
+  // canvas {
+  //   z-index: 1;
+  // }
+  // .laber_name{
+  //   z-index: 100;
+  // }
+  /* background-color: aqua; */
+
+}
+
+#three-tag {
+  // z-index: 101;
+  position: fixed;
+  top: 100px;
+  right: 200px;
+}
+
+.laber_icon {
+  font-size: 28px;
+}
+
+.laber_icon {
+  cursor: pointer;
+
+  span {
+    font-size: 38px;
+  }
+}
+
+
+.three-right {
+  width: 20vw;
+  height: 100vh;
+
+  .option {
+    padding: 10px;
+  }
+
+  .option-title {
+    line-height: 1.5;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgb(70, 70, 70);
+  }
+
+  .option-room {
+    font-size: 16px;
+    height: 300px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgb(151, 151, 151);
+    border-radius: 6px;
+  }
+
+  .option-add {
+    margin-left: 10px;
+  }
+
+  .option-room-title {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 0.5px solid rgb(182, 182, 182);
+  }
+
+  .option-room-body {
+    overflow: auto;
+    height: 260px;
+  }
+
+  .option-room-item {
+    padding: 10px;
+    cursor: pointer;
+    color: rgb(0, 0, 0);
+    background-color: rgb(214, 214, 214);
+    transform: all 0.5s;
+    margin: 10px 0;
+    border-radius: 6px;
+
+    // border-bottom: 0.5px solid rgb(182, 182, 182);
+    .room-revise {
+      float: right;
+      font-size: 14px;
+      background-color: rgb(104, 104, 104);
+      color: rgb(255, 255, 255);
+      padding: 2px 6px;
+    }
+
+    .room-revise:hover {
+      float: right;
+      background-color: rgb(158, 158, 158);
+      color: rgb(0, 0, 0);
+      padding: 2px 6px;
+    }
+  }
+
+  .option-room-item:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgb(133, 133, 133);
+  }
+
+  .option-room-activeTtem {
+    color: rgb(255, 255, 255);
+    background-color: rgb(54, 54, 54);
+  }
+}
+
+
+.option-point {
+  font-size: 16px;
+  height: 300px;
+  width: 100%;
+  // padding: 10px;
+  // border: 1px solid rgb(151, 151, 151);
+  border-radius: 6px;
+  margin-top: 10px;
+
+  .option-point-title {
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 0.5px solid rgb(182, 182, 182);
+  }
+
+  .option-point-body {
+    overflow: auto;
+    height: 500px;
+    padding-top: 10px;
+    label,.el-form-item__label{
+      color: rgb(255, 255, 255);
+    }
+  }
+
+  .option-point-item {
+    padding: 10px;
+    cursor: pointer;
+    color: rgb(0, 0, 0);
+    background-color: rgb(214, 214, 214);
+    transform: all 0.5s;
+    margin: 10px 0;
+    border-radius: 6px;
+
+    // border-bottom: 0.5px solid rgb(182, 182, 182);
+    .room-revise {
+      float: right;
+      font-size: 14px;
+      background-color: rgb(104, 104, 104);
+      color: rgb(255, 255, 255);
+      padding: 2px 6px;
+    }
+
+    .room-revise:hover {
+      float: right;
+      background-color: rgb(158, 158, 158);
+      color: rgb(0, 0, 0);
+      padding: 2px 6px;
+    }
+  }
+}

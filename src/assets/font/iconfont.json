@@ -1,0 +1,58 @@
+{
+  "id": "4005037",
+  "name": "threejs",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "78333",
+      "name": "方向2",
+      "font_class": "fangxiang2",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "78336",
+      "name": "方向3",
+      "font_class": "fangxiang3",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "78337",
+      "name": "方向4",
+      "font_class": "fangxiang4",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "7938415",
+      "name": "方向圆箭头-向右",
+      "font_class": "fangxiangyuanjiantou-xiangyou",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "7938416",
+      "name": "方向圆箭头-向上",
+      "font_class": "fangxiangyuanjiantou-xiangshang",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "7938417",
+      "name": "方向圆箭头-向下",
+      "font_class": "fangxiangyuanjiantou-xiangxia",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "7938419",
+      "name": "方向圆箭头-向左",
+      "font_class": "fangxiangyuanjiantou-xiangzuo",
+      "unicode": "e61a",
+      "unicode_decimal": 58906
+    }
+  ]
+}
