@@ -1,7 +1,8 @@
 <template>
   <div class="three-right">
     <div class="option">
-      <div class="option-title">信息</div>
+      <div class="option-title">信息<button style="float: right" @click="preserve">保存</button></div>
+
       <!-- <button @click="onPunctuate">{{ punctuate ? '关闭' : '开启' }}</button> -->
       <slot></slot>
 
@@ -31,14 +32,15 @@
             <span class="room-revise" @click="">修改</span>
           </div> -->
           <div v-show="pointState">
-            <template v-for="item in room.interactivePoints" >
+            <template v-for="item in room.interactivePoints">
               <div class="option-point-item">
                 {{ item.name }}
+                <span class="room-revise" @click="deletePoint(item)">删除</span>
                 <span class="room-revise" @click="revisePoint(item)">修改</span>
               </div>
             </template>
           </div>
-          <RoomPoint v-if="!pointState" @setPoint="setPoint" @close="revertPoint" :data="roomPoint"/>
+          <RoomPoint v-if="!pointState" @setPoint="setPoint" @close="revertPoint" :data="roomPoint" />
         </div>
       </div>
       <!-- <button @click="clear">清除</button> -->
@@ -82,9 +84,17 @@ const room = ref({
 onMounted(() => {
   // console.log(props);
   // console.log(files);
+  let data = localStorage.getItem('room');
+  if (data) {
+    rooms.value = JSON.parse(data);
+  }
 });
 
-
+const preserve = () => {
+  // console.log(rooms.value);
+  console.log(threeCase.scene);
+  localStorage.setItem('room', JSON.stringify(rooms.value));
+};
 
 watch(counterStore.iconPoint, () => {});
 const dialogVisible = ref(false);
@@ -113,18 +123,36 @@ const onRoom = (item) => {
   if (item.id == room.value.id) return;
   room.value = item;
   // threeCase.foundSpherome(item.toMap);
-  onClear()
+  onClear();
+  if (room.value.interactivePoints.length > 0) {
+    room.value.interactivePoints.map(item=>{
+      threeCase.createLableIcon(item, () => {
+        handleReactivePointClick(item);
+      });
+    })
+  }
 };
 
-const onClear = () => {
+const handleReactivePointClick = (data) => {
+  console.log(data);
+  // Object.assign(form, data);
+  if (data.type == 'direction') {
+    onClear(data.toMap)
+  }
+};
+
+const onClear = (image = null) => {
   emits('setLoading', true);
   let img = room.value.toMap;
   console.log(img);
   console.log(threeCase.scene.children);
   threeCase.scene.remove(threeCase.room);
   console.log(threeCase.labelRenderer.getSize());
+  room.value.interactivePoints.map(item=>{
+    deletePoint(item)
+  })
   setTimeout(() => {
-    threeCase.foundSpherome(img);
+    threeCase.foundSpherome(image || img);
     emits('setLoading', false);
   }, 1000);
 };
@@ -135,8 +163,6 @@ const cutRoom = (item) => {
   roomData.value = item;
   dialogVisible.value = true;
 };
-
-
 
 const roomPoints = ref([]);
 const roomPoint = ref();
@@ -153,19 +179,26 @@ const revertPoint = () => {
 
 const setPoint = (data) => {
   console.log(data);
-  let index = room.value.interactivePoints.findIndex(res => res.id == data.id);
+  let index = room.value.interactivePoints.findIndex((res) => res.id == data.id);
   if (index == -1) {
     room.value.interactivePoints.push(data);
-  }else{
+  } else {
     room.value.interactivePoints[index] = data;
   }
 
   pointState.value = true;
 };
-const revisePoint = (data) =>{
+const revisePoint = (data) => {
   roomPoint.value = data;
   pointState.value = false;
 };
 
-
+const deletePoint = (data) => {
+  threeCase.scene.remove(threeCase.dropPoints[data.id]);
+  delete threeCase.dropPoints[data.id];
+  let index = room.value.interactivePoints.findIndex((res) => res.id == data.id);
+  if (index != -1) {
+    room.value.interactivePoints.splice(index,1)
+  }
+};
 </script>

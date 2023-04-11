@@ -106,6 +106,7 @@ onMounted(() => {
 const onSubmit = async () => {
   await ruleFormRef.value.validate((valid, fields) => {
     if (valid) {
+      threeCase.removeEventcClick();
       console.log('submit!');
       emits('setPoint', form);
     } else {
