@@ -63,7 +63,7 @@
 
   .option-room {
     font-size: 16px;
-    height: 300px;
+    height: 35vh;
     width: 100%;
     padding: 10px;
     border: 1px solid rgb(151, 151, 151);
@@ -83,7 +83,13 @@
 
   .option-room-body {
     overflow: auto;
-    height: 260px;
+    height: 26vh;
+    form{
+      padding: 10px;
+    }
+    label,.el-form-item__label{
+      color: rgb(255, 255, 255);
+    }
   }
 
   .option-room-item {
@@ -126,7 +132,7 @@
 
 .option-point {
   font-size: 16px;
-  height: 300px;
+  height: 55vh;
   width: 100%;
   // padding: 10px;
   // border: 1px solid rgb(151, 151, 151);
@@ -142,7 +148,8 @@
 
   .option-point-body {
     overflow: auto;
-    height: 500px;
+    max-height:50vh ;
+    // height: 50vh;
     padding-top: 10px;
     label,.el-form-item__label{
       color: rgb(255, 255, 255);
@@ -174,4 +181,8 @@
       padding: 2px 6px;
     }
   }
+}
+
+.lil-gui.autoPlace{
+  right:21vw;
 }

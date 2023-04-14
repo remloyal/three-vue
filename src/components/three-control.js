@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as TWEEN from '@tweenjs/tween.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { mainStore } from '../store/index';
-import { throttle } from 'lodash';
+import { mixin, throttle, values } from 'lodash';
 
 class Drop {
   // 点集合
@@ -62,6 +63,80 @@ class Drop {
     this.labelRenderer.render(this.scene, this.camera);
     // console.log(pointLabel);
     this.dropPoints[point.id] = pointLabel;
+    // this.initGui(pointLabel);
+  }
+  initGui(pointLabel) {
+    const gui = new GUI({ width: 310 });
+    // panel.add(this.room.rotation, 'myBoolean')/
+    // panel.add( this.controls, 'property' );
+    // const folderLocal = gui.addFolder('pointLabel');
+    // gui.add(pointLabel, 'position.x', -200, 200);
+    const euler = new THREE.Euler(0, 0, 0, 'XYZ');
+    gui.add(pointLabel.rotation, 'x', 0, 200).onChange((value) => {
+      // console.log(value);
+      // pointLabel.rotateX(`${value}deg`)
+      euler.set(value, euler.y, euler.z);
+      pointLabel.rotation.set(euler.x, euler.y, euler.z);
+      this.labelRenderer.render(this.scene, this.camera);
+      // console.log(pointLabel.rotation.x.set());
+    });
+    gui.add(pointLabel.rotation, 'y', 0, 200).onChange((value) => {
+      // console.log(value);
+      // pointLabel.rotateX(`${value}deg`)
+      euler.set(euler.x, value, euler.z);
+      pointLabel.rotation.set(euler.x, euler.y, euler.z);
+      this.labelRenderer.render(this.scene, this.camera);
+      // console.log(pointLabel.rotation.x.set());
+    });
+    gui.add(pointLabel.rotation, 'z', 0, 200).onChange((value) => {
+      // console.log(value);
+      // pointLabel.rotateX(`${value}deg`)
+      euler.set(euler.x, value, euler.z);
+      pointLabel.rotation.set(euler.x, euler.y, euler.z);
+      this.labelRenderer.render(this.scene, this.camera);
+      // console.log(pointLabel.rotation.x.set());
+    });
+    // function updateCamera() {
+    //   this.camera.updateProjectionMatrix();
+    // }
+    // gui.add(this.camera, 'fov', 1, 180).onChange(updateCamera);
+    // gui.add(this.camera, 'near', 1, 200).onChange(updateCamera);
+    // gui.add(this.camera, 'far', 1, 200).onChange(updateCamera);
+    // gui.add(new PositionGUI(pointLabel.rotation, 'x'), 'modify', 0, 200).name('x').onChange(value=>{
+    //   pointLabel.rotateX(value)
+    // });;
+    // gui.add(pointLabel.rotation, 'rotationy', 0, 200).onChange(value=>{
+    //   pointLabel.rotateY(value)
+    // });;
+    // gui.add(new PositionGUI(pointLabel.rotation, 'z'), 'modify', 0, 200).name('z').onChange(value=>{
+    //   pointLabel.rotateZ(value)
+    // });
+
+    // panel.add( this.room.rotation, 'number', 0, 100, 1 );
+    // panel.add( this.room.rotation, 'options', [ 1, 2, 3 ] );
+  }
+
+  deletePoint(data) {
+    console.log('deletePoint', data);
+    if (this.dropPoints[data.id]) {
+      this.scene.remove(this.dropPoints[data.id]);
+      delete this.dropPoints[data.id];
+    }
+  }
+}
+
+class PositionGUI {
+  constructor(obj, name) {
+    this.obj = obj;
+    this.name = name;
+  }
+  get modify() {
+    return this.obj[this.name];
+  }
+  set modify(v) {
+    console.log(v, this.name);
+    this.obj[this.name] = v;
+    console.log(this.obj);
   }
 }
 
@@ -88,15 +163,27 @@ export class ThreeControl extends Drop {
       this.store.cameraPoints = this.cameraPoints;
     }, 500);
   }
+  mixin(obj) {
+    if (Object.keys(obj).length > 0) {
+      Object.keys(obj).map((item) => {
+        this[item] = obj[item];
+      });
+    }
+  }
   init(id) {
     this.threeEl = document.getElementById(id);
     this.scene = new THREE.Scene();
-    this.renderer = new THREE.WebGLRenderer();
+    //antialias:true 启用抗锯齿渲染
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.width, this.height);
     this.threeEl.appendChild(this.renderer.domElement);
     // 相机
     this.camera = new THREE.PerspectiveCamera(65, this.width / this.height, 0.1, 1500);
-    // this.camera = new THREE.PerspectiveCamera(this.width/10, - this.width/this.width, this.height/12, -this.height/this.height, 0.1, 1000);
+    var width = this.width * 4; //窗口宽度
+    var height = this.height * 4; //窗口高度
+    var k = (width / height) * 4; //窗口宽高比
+    var s = 20;
+    // this.camera = new THREE.OrthographicCamera(-width , width, height, -height, 1, width);
     this.camera.position.set(0, 0, 0);
     this.cameraVector3 = new THREE.Vector3(0, 0, 0);
     this.camera.lookAt(this.cameraVector3);
@@ -140,6 +227,7 @@ export class ThreeControl extends Drop {
     this.controls.update();
     this.controls.addEventListener('change', () => {
       this.renderer.render(this.scene, this.camera);
+      // console.log(this.dropPoints);
       let cameraPoints = this.camera.getWorldDirection(this.cameraVector3);
       this.cameraPoints = [cameraPoints.x, cameraPoints.y, cameraPoints.z];
       this.renewCameraPoints();
@@ -152,13 +240,15 @@ export class ThreeControl extends Drop {
     // this.controls.minDistance = 0.01;
     // this.controls.maxDistance = 500;
     this.controls.enableZoom = true;
-    this.controls.zoomSpeed = 5.0;
+    // this.controls.zoomSpeed = 5.0;
 
     // this.controls.addEventListener('change', this.controlRender);
     // 缩放限制
     this.controls.maxDistance = 180;
     // this.controls.minDistance = -50;
+    // this.initGui()
   }
+
   controlRender(event) {
     //相机位置与目标观察点距离
     console.log('controlRender', event);
@@ -249,19 +339,69 @@ export class ThreeControl extends Drop {
 
   onDocumentMouseDown(event) {
     event.preventDefault();
+
+    // var mouse = new THREE.Vector2(
+    //   (event.clientX / threeCase.width) * 2 - 1,
+    //   -(event.clientY / threeCase.height) * 2 + 1
+    // );
+    // console.log(mouse);
+
     var vector = new THREE.Vector3(); //三维坐标对象
     vector.set((event.clientX / threeCase.width) * 2 - 1, -(event.clientY / threeCase.height) * 2 + 1, 0.5);
     vector.unproject(threeCase.camera);
     var raycaster = new THREE.Raycaster(threeCase.camera.position, vector.sub(threeCase.camera.position).normalize());
     var intersects = raycaster.intersectObjects(threeCase.scene.children);
     console.log(intersects);
+
+    const x = event.clientX;
+    const y = event.clientY;
+    const pos = new THREE.Vector3();
+    console.log(threeCase.threeEl);
+    pos.x = (x / threeCase.width) * 2;
+    pos.y = -(y / threeCase.height) * 2;
+    pos.z = 0.5;
+
     if (intersects.length > 0) {
       var selected = intersects[0]; //取第一个物体
       console.log('x坐标:' + selected.point.x);
       console.log('y坐标:' + selected.point.y);
       console.log('z坐标:' + selected.point.z);
-      threeCase.threeElEvent([selected.point.x, selected.point.y, selected.point.z]);
-      threeCase.store.pointCoordinate = [selected.point.x, selected.point.y, selected.point.z];
+      const mouse = new THREE.Vector2();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      // 创建一个 Raycaster 对象
+      const raycasters = new THREE.Raycaster();
+
+      // 将鼠标位置转换为三维坐标
+      raycasters.setFromCamera(mouse, threeCase.camera);
+      const intersectsss = raycasters.intersectObjects(threeCase.scene.children);
+      // let pickPosition = threeCase.setPickPosition(event);
+      console.log(intersectsss[0].normal);
+      let z;
+      let x;
+      let y;
+      intersectsss.forEach((item) => {
+        if (item.normal) {
+          z = item.normal.z;
+          x = item.normal.x;
+          y = item.normal.y;
+        }
+      });
+      threeCase.threeElEvent && threeCase.threeElEvent([x, y, z || 0]);
+      // if (selected.normal) {
+      // }else{
+      //   threeCase.threeElEvent && threeCase.threeElEvent([selected.point.x, selected.point.y, selected.point.z]);
+      // }
+
+      // const x = event.clientX;
+      // const y = event.clientY;
+      // const pos = new THREE.Vector3();
+      // pos.x = (x / window.innerWidth) * 2 - 1;
+      // pos.y = -(y / window.innerHeight) * 2 + 1;
+      // pos.z = 0.5;
+      // this.drawData.geometry.setPositions([...this.drawData.geometry.attributes.position.array, ...pos.toArray()]);
+
+      // threeCase.store.pointCoordinate = [selected.point.x, selected.point.y, selected.point.z];
     }
   }
   // .threeEl.addEventListener('click', onDocumentMouseDown);
@@ -276,3 +416,106 @@ export class ThreeControl extends Drop {
 }
 
 export const threeCase = new ThreeControl();
+
+// 动态绘制
+export const drawFace = {
+  drawInit() {
+    var drawData = {
+      index: 3,
+    };
+    // // 创建空的BufferGeometry对象
+    // drawData.geometry = new THREE.BufferGeometry();
+
+    // // 创建空的BufferAttribute对象
+    // drawData.positionAttribute = new THREE.BufferAttribute(new Float32Array([]), 3);
+    // // 将BufferAttribute对象添加到BufferGeometry对象中
+    // drawData.geometry.setAttribute('position', drawData.positionAttribute);
+    // // 创建PointsMaterial对象
+    // drawData.material = new THREE.PointsMaterial({
+    //   color: 0xffffff,
+    //   size: 0.1,
+    // });
+    // // 创建Points对象
+    // drawData.points = new THREE.Points(drawData.geometry, drawData.material);
+    // this.scene.add(drawData.points);
+
+    // 创建一个包含两个顶点的线段几何体
+    // drawData.geometry = new THREE.LINE();
+    // drawData.geometry.setPositions([0, 0, 0, 1, 1, 0]);
+    // drawData.geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
+    // drawData.geometry.vertices.push(new THREE.Vector3(0, 10, 0));
+    // drawData.geometry.vertices.push(new THREE.Vector3(10, 0, 0));
+    // 将几何体添加到场景中
+    drawData.material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const points = [];
+    points.push(new THREE.Vector3(-10, 0, 0));
+    points.push(new THREE.Vector3(0, 10, 0));
+    points.push(new THREE.Vector3(10, 0, 0));
+
+    drawData.geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    drawData.line = new THREE.Line(drawData.geometry, drawData.material);
+
+    this.scene.add(drawData.line);
+    this.drawData = drawData;
+
+    this.threeEl.addEventListener('mousemove', onRay);
+    function onRay(event) {
+      // console.log(event);
+      const mouse = new THREE.Vector3();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      // 创建一个 Raycaster 对象
+      const raycaster = new THREE.Raycaster(mouse);
+
+      // 将鼠标位置转换为三维坐标
+      // raycaster.setFromCamera(mouse, threeCase.camera);
+      const intersects = raycaster.intersectObjects(threeCase.scene.children);
+      // let pickPosition = threeCase.setPickPosition(event);
+      console.log(intersects[0].point);
+      // const raycaster = new THREE.Raycaster();
+      // raycaster.setFromCamera(pickPosition, threeCase.camera);
+      // // 计算物体和射线的交点
+      // const intersects = raycaster.intersectObjects(threeCase.scene.children, true);
+      // // const labelRenderer = raycaster.intersectObjects([threeCase.room]);
+      // console.log(intersects);
+      // // 数组大于0 表示有相交对象
+      // if (intersects.length > 0) {
+      //   if (lastPick) {
+      //     lastPick.object.material.color.set('yellow');
+      //   }
+      //   threeCase.lastPick = intersects[0];
+      // } else {
+      //   if (lastPick) {
+      //     // 复原
+      //     threeCase.lastPick.object.material.color.set(0x6688aa);
+      //     threeCase.lastPick = null;
+      //   }
+      // }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+
+    // 定义顶点数组、颜色数组和 UV 坐标数组
+    const vertices = new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0]);
+    const colors = new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]);
+    const uvs = new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0]);
+
+    // 将顶点、颜色和 UV 坐标属性添加到 BufferGeometry 对象中
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+
+    // 定义面的索引数组并将其添加到 BufferGeometry 对象中
+    const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+
+    // 创建一个 Mesh 对象来渲染几何体
+    const material = new THREE.MeshBasicMaterial({ vertexColors: true,side: THREE.DoubleSide, });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    // 将 Mesh 对象添加到场景中进行渲染
+    drawData.Mesh = mesh
+    this.scene.add(mesh);
+  },
+};
